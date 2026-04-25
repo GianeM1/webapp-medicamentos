@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entrar — Dose Certa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <nav>
+    <a href="{{ url_for('index') }}" class="logo">💊 Dose Certa</a>
+    <div class="nav-links">
+      <a href="{{ url_for('cadastro') }}">Criar conta grátis</a>
+      <a href="{{ url_for('login') }}" class="ativo">Entrar na minha conta</a>
+    </div>
+  </nav>
+
+  <div class="container" style="max-width:480px; padding-top:3rem;">
+    <h1>Entre na sua conta</h1>
+    <p class="subtitulo">Continue com sua rotina organizada</p>
+
+    <div class="card">
+      {% if erro %}
+        <div class="alerta-erro">{{ erro }}</div>
+      {% endif %}
+
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="campo">
+          <label for="cpf">CPF</label>
+          <input type="text" id="cpf" name="cpf" placeholder="999.999.999-99" required>
+        </div>
+
+        <div class="campo">
+          <label for="senha">Senha (só números)</label>
+          <input type="password" id="senha" name="senha" placeholder="••••••" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Entrar</button>
+      </form>
+
+      <p class="link-aux">
+        Ainda não tem conta? <a href="{{ url_for('cadastro') }}">Criar conta grátis</a>
+      </p>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,1 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dose Certa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
 
+  <nav>
+    <a href="{{ url_for('index') }}" class="logo">💊 Dose Certa</a>
+    <div class="nav-links">
+      <a href="{{ url_for('cadastro') }}">Criar conta grátis</a>
+      <a href="{{ url_for('login') }}" class="ativo">Entrar na minha conta</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-texto">
+      <h1>Organizamos seus remédios com carinho</h1>
+      <p>
+        Conte com a nossa ajuda para cuidar da sua saúde.<br>
+        Cadastre sua medicação, receba alertas e garanta que os remédios estão em dia.
+      </p>
+      <div class="hero-acoes">
+        <a href="{{ url_for('cadastro') }}" class="btn btn-primary">Criar conta grátis</a>
+        <a href="{{ url_for('login') }}" class="btn btn-outline">Entrar na minha conta</a>
+      </div>
+    </div>
+    <div class="hero-img">🧓</div>
+  </section>
+
+</body>
+</html>

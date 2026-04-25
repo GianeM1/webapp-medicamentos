@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastrar Rotina — Dose Certa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <nav>
+    <a href="{{ url_for('index') }}" class="logo">💊 Dose Certa</a>
+    <div class="nav-links">
+      <span style="color:rgba(255,255,255,.8); font-size:.9rem;">
+        Olá, {{ session.get('user_name', '').split()[0] }} 👋
+      </span>
+      <a href="{{ url_for('logout') }}">Sair</a>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top:2.5rem;">
+
+    <h1>Cadastrar remédio</h1>
+    <p class="subtitulo">O primeiro passo é cadastrar os remédios que você deve tomar</p>
+
+    <!-- Barra de progresso -->
+    <div class="progresso">
+      <div class="progresso-dot feito" id="dot1"></div>
+      <div class="progresso-dot" id="dot2"></div>
+      <div class="progresso-dot" id="dot3"></div>
+      <div class="progresso-dot" id="dot4"></div>
+    </div>
+
+    <div class="card">
+
+      <!-- PASSO 1: Escolher remédio -->
+      <div class="passo ativo" id="passo1">
+        <h2>Qual remédio você vai tomar?</h2>
+        <div class="campo">
+          <label for="busca">Pesquisar remédio</label>
+          <input type="text" id="busca" placeholder="ex. Nimesulida 100mg" oninput="filtrarMeds()">
+        </div>
+
+        <div id="lista-meds" style="display:flex; flex-direction:column; gap:.5rem; margin-top:.5rem; max-height:280px; overflow-y:auto;">
+          {% for med in meds %}
+            <div class="freq-opcao" onclick="selecionarMed({{ med.id }}, '{{ med.name }}', {{ med.potency }})">
+              <span>{{ med.name }} <strong>{{ med.potency | int }}mg</strong></span>
+            </div>
+          {% endfor %}
+        </div>
+
+        <p id="med-selecionado" style="display:none; margin-top:1rem;">
+          <span class="tag" id="tag-med"></span>
+        </p>
+
+        <button class="btn btn-primary" style="margin-top:1.5rem;" onclick="irPasso(2)" id="btn-passo1" disabled>
+          Avançar →
+        </button>
+      </div>
+
+      <!-- PASSO 2: Quantos dias -->
+      <div class="passo" id="passo2">
+        <h2>Por quantos <em>dias</em> você vai tomar?</h2>
+        <div class="campo">
+          <label for="dias">Número de dias</label>
+          <input type="number" id="dias" placeholder="ex. 3" min="1" max="365" oninput="validarDias()">
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+          <button class="btn btn-outline" style="flex:1" onclick="irPasso(1)">← Voltar</button>
+          <button class="btn btn-primary" style="flex:2" onclick="irPasso(3)" id="btn-passo2" disabled>Avançar →</button>
+        </div>
+      </div>
+
+      <!-- PASSO 3: Frequência -->
+      <div class="passo" id="passo3">
+        <h2>Qual a <em>frequência</em> do medicamento?</h2>
+
+        <div class="freq-opcoes">
+          <label class="freq-opcao" onclick="selecionarFreq(this, 3)">
+            <input type="radio" name="freq" value="3"> A cada 3 horas
+          </label>
+          <label class="freq-opcao" onclick="selecionarFreq(this, 6)">
+            <input type="radio" name="freq" value="6"> A cada 6 horas
+          </label>
+          <label class="freq-opcao" onclick="selecionarFreq(this, 8)">
+            <input type="radio" name="freq" value="8"> A cada 8 horas
+          </label>
+          <label class="freq-opcao" onclick="selecionarFreq(this, 12)">
+            <input type="radio" name="freq" value="12"> A cada 12 horas
+          </label>
+          <label class="freq-opcao" onclick="selecionarFreq(this, 24)">
+            <input type="radio" name="freq" value="24"> Uma vez por dia
+          </label>
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+          <button class="btn btn-outline" style="flex:1" onclick="irPasso(2)">← Voltar</button>
+          <button class="btn btn-primary" style="flex:2" onclick="irPasso(4)" id="btn-passo3" disabled>Avançar →</button>
+        </div>
+      </div>
+
+      <!-- PASSO 4: Horário de início -->
+      <div class="passo" id="passo4">
+        <h2>Quando começa a primeira dose?</h2>
+
+        <div class="freq-opcoes" style="margin-bottom:1.5rem;">
+          <label class="freq-opcao" onclick="selecionarInicio('agora', this)">
+            <input type="radio" name="inicio" value="agora"> Agora
+          </label>
+          <label class="freq-opcao" onclick="selecionarInicio('depois', this)">
+            <input type="radio" name="inicio" value="depois"> Escolher horário
+          </label>
+        </div>
+
+        <div id="campo-horario" style="display:none;" class="campo">
+          <label for="horario">Horário da primeira dose</label>
+          <input type="datetime-local" id="horario">
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+          <button class="btn btn-outline" style="flex:1" onclick="irPasso(3)">← Voltar</button>
+          <button class="btn btn-primary" style="flex:2" onclick="confirmarRotina()" id="btn-passo4" disabled>
+            Confirmar ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- PASSO 5: Sucesso -->
+      <div class="passo" id="passo5" style="text-align:center; padding:1rem 0;">
+        <div style="font-size:4rem; margin-bottom:1rem;">🎉</div>
+        <h2>Tudo certo!</h2>
+        <p style="color:var(--texto-suave); margin:1rem 0 2rem;">
+          Você vai receber uma <strong>notificação no WhatsApp</strong> na hora de tomar seu remédio.
+        </p>
+        <a href="{{ url_for('agendamentos') }}" class="btn btn-primary" style="max-width:300px; margin:0 auto;">
+          Ver meu agendamento →
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ── Estado ──
+    let medId = null, medNome = null, freqHoras = null, inicioDt = null;
+
+    // ── Navegação entre passos ──
+    function irPasso(n) {
+      document.querySelectorAll('.passo').forEach(p => p.classList.remove('ativo'));
+      document.getElementById('passo' + n).classList.add('ativo');
+
+      document.querySelectorAll('.progresso-dot').forEach((d, i) => {
+        d.classList.toggle('feito', i < n);
+      });
+    }
+
+    // ── Passo 1: selecionar remédio ──
+    function filtrarMeds() {
+      const termo = document.getElementById('busca').value.toLowerCase();
+      document.querySelectorAll('#lista-meds .freq-opcao').forEach(el => {
+        el.style.display = el.textContent.toLowerCase().includes(termo) ? '' : 'none';
+      });
+    }
+
+    function selecionarMed(id, nome, potencia) {
+      medId = id; medNome = `${nome} ${potencia}mg`;
+      document.querySelectorAll('#lista-meds .freq-opcao').forEach(el => el.classList.remove('selecionada'));
+      event.currentTarget.classList.add('selecionada');
+
+      document.getElementById('tag-med').textContent = medNome;
+      document.getElementById('med-selecionado').style.display = 'block';
+      document.getElementById('btn-passo1').disabled = false;
+    }
+
+    // ── Passo 2: dias ──
+    function validarDias() {
+      const v = parseInt(document.getElementById('dias').value);
+      document.getElementById('btn-passo2').disabled = !(v >= 1 && v <= 365);
+    }
+
+    // ── Passo 3: frequência ──
+    function selecionarFreq(el, horas) {
+      document.querySelectorAll('.freq-opcoes .freq-opcao').forEach(e => e.classList.remove('selecionada'));
+      el.classList.add('selecionada');
+      freqHoras = horas;
+      document.getElementById('btn-passo3').disabled = false;
+    }
+
+    // ── Passo 4: início ──
+    function selecionarInicio(tipo, el) {
+      document.querySelectorAll('[name="inicio"]').forEach(r => r.parentElement.classList.remove('selecionada'));
+      el.classList.add('selecionada');
+      const campo = document.getElementById('campo-horario');
+
+      if (tipo === 'agora') {
+        campo.style.display = 'none';
+        inicioDt = new Date().toISOString();
+        document.getElementById('btn-passo4').disabled = false;
+      } else {
+        campo.style.display = 'block';
+        document.getElementById('horario').addEventListener('change', function () {
+          inicioDt = new Date(this.value).toISOString();
+          document.getElementById('btn-passo4').disabled = false;
+        });
+      }
+    }
+
+    // ── Confirmar e salvar ──
+    async function confirmarRotina() {
+      const dias = parseInt(document.getElementById('dias').value);
+
+      const res = await fetch('/api/salvar-rotina', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          meds_id:         medId,
+          days_of_intake:  dias,
+          frequency_hours: freqHoras,
+          start_datetime:  inicioDt
+        })
+      });
+
+      const data = await res.json();
+      if (data.sucesso) irPasso(5);
+      else alert('Erro ao salvar. Tente novamente.');
+    }
+  </script>
+
+</body>
+</html>

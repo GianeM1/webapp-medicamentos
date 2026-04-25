@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamentos — Dose Certa</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+  <nav>
+    <a href="{{ url_for('index') }}" class="logo">💊 Dose Certa</a>
+    <div class="nav-links">
+      <span style="color:rgba(255,255,255,.8); font-size:.9rem;">
+        Olá, {{ session.get('user_name', '').split()[0] }} 👋
+      </span>
+      <a href="{{ url_for('logout') }}">Sair</a>
+    </div>
+  </nav>
+
+  <div class="container" style="padding-top:2.5rem;">
+
+    <h1>Seu agendamento</h1>
+    <p class="subtitulo">Rotina ativa mais recente</p>
+
+    {% if agendamento %}
+      {% set med = agendamento.meds %}
+
+      <div class="ag-card">
+        <h2>{{ med.name }} {{ med.potency | int }}mg</h2>
+        <p class="detalhe">
+          Por {{ agendamento.days_of_intake | int }} dias &nbsp;·&nbsp;
+          A cada {{ agendamento.frequency_hours | int }}h
+        </p>
+        <p class="detalhe">
+          Começando em
+          {{ agendamento.start_datetime | replace('T', ' às ') | truncate(19, True, '') }}
+        </p>
+      </div>
+
+      <div style="text-align:right;">
+        <button
+          class="btn btn-danger"
+          onclick="cancelarAgendamento({{ agendamento.id }})"
+        >
+          Cancelar agendamento
+        </button>
+      </div>
+
+    {% else %}
+      <div class="card" style="text-align:center; padding:3rem 2rem;">
+        <div style="font-size:3rem; margin-bottom:1rem;">📋</div>
+        <h2>Nenhuma rotina ativa</h2>
+        <p style="color:var(--texto-suave); margin:1rem 0 2rem;">
+          Cadastre seu primeiro medicamento para começar.
+        </p>
+        <a href="{{ url_for('rotina') }}" class="btn btn-primary" style="max-width:280px; margin:0 auto;">
+          Cadastrar remédio
+        </a>
+      </div>
+    {% endif %}
+
+  </div>
+
+  <script>
+    async function cancelarAgendamento(scheduleId) {
+      if (!confirm('Deseja mesmo cancelar este agendamento?')) return;
+
+      const res = await fetch('/api/cancelar-rotina', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ schedule_id: scheduleId })
+      });
+
+      const data = await res.json();
+      if (data.sucesso) location.reload();
+      else alert('Erro ao cancelar. Tente novamente.');
+    }
+  </script>
+
+</body>
+</html>
