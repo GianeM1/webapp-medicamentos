@@ -1,0 +1,6 @@
+flask==3.1.0
+supabase==2.15.0
+python-dotenv==1.1.0
+twilio==9.4.6
+APScheduler==3.11.0
+gunicorn==23.0.0
