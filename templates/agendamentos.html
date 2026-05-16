@@ -21,31 +21,27 @@
   <div class="container" style="padding-top:2.5rem;">
 
     <h1>Seu agendamento</h1>
-    <p class="subtitulo">Rotina ativa mais recente</p>
+    <p class="subtitulo">Rotinas ativas</p>
 
-    {% if agendamento %}
-      {% set med = agendamento.meds %}
-
-      <div class="ag-card">
-        <h2>{{ med.name }} {{ med.potency | int }}mg</h2>
-        <p class="detalhe">
-          Por {{ agendamento.days_of_intake | int }} dias &nbsp;·&nbsp;
-          A cada {{ agendamento.frequency_hours | int }}h
-        </p>
-        <p class="detalhe">
-          Começando em
-          {{ agendamento.start_datetime | replace('T', ' às ') | truncate(19, True, '') }}
-        </p>
-      </div>
-
-      <div style="text-align:right;">
-        <button
-          class="btn btn-danger"
-          onclick="cancelarAgendamento({{ agendamento.id }})"
-        >
-          Cancelar agendamento
-        </button>
-      </div>
+    {% if ativos %}
+      {% for ag in ativos %}
+        <div class="ag-card" style="margin-bottom:1rem;">
+          <h2>{{ ag.meds['name'] }} {{ ag.meds['potency'] | int }}mg</h2>
+          <p class="detalhe">
+            Por {{ ag.days_of_intake | int }} dias &nbsp;·&nbsp;
+            A cada {{ ag.frequency_hours | int }}h
+          </p>
+          <p class="detalhe">
+            Começando em
+            {{ ag.start_datetime | replace('T', ' às ') | truncate(19, True, '') }}
+          </p>
+          <div style="text-align:right; margin-top:1rem;">
+            <button class="btn btn-danger" onclick="cancelarAgendamento({{ ag.id }})">
+              Cancelar agendamento
+            </button>
+          </div>
+        </div>
+      {% endfor %}
 
     {% else %}
       <div class="card" style="text-align:center; padding:3rem 2rem;">
@@ -58,6 +54,34 @@
           Cadastrar remédio
         </a>
       </div>
+    {% endif %}
+
+    {% if historico %}
+      <h2 style="margin-top:2.5rem; font-family:'Fraunces',serif; font-size:1.3rem;">
+        Histórico
+      </h2>
+      <p class="subtitulo" style="margin-top:.25rem;">Rotinas anteriores</p>
+
+      {% for item in historico %}
+        <div style="
+          border: 1.5px solid var(--bege-dk);
+          border-radius: var(--radius);
+          padding: 1.25rem 1.5rem;
+          margin-bottom: 1rem;
+          opacity: .7;
+        ">
+          <p style="font-weight:600; margin-bottom:.25rem;">
+            {{ item.meds['name'] }} {{ item.meds['potency'] | int }}mg
+          </p>
+          <p style="color:var(--texto-suave); font-size:.9rem;">
+            Por {{ item.days_of_intake | int }} dias &nbsp;·&nbsp;
+            A cada {{ item.frequency_hours | int }}h
+          </p>
+          <p style="color:var(--texto-suave); font-size:.85rem; margin-top:.25rem;">
+            Início: {{ item.start_datetime | replace('T', ' às ') | truncate(19, True, '') }}
+          </p>
+        </div>
+      {% endfor %}
     {% endif %}
 
   </div>
