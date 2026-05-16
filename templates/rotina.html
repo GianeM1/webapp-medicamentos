@@ -133,7 +133,14 @@
         <p style="color:var(--texto-suave); margin:1rem 0 2rem;">
           Você vai receber uma <strong>notificação no WhatsApp</strong> na hora de tomar seu remédio.
         </p>
-        <a href="{{ url_for('agendamentos') }}" class="btn btn-primary" style="max-width:300px; margin:0 auto;">
+
+        <div id="btn-adicionar" style="display:block;">
+          <button onclick="adicionarOutro()" class="btn btn-outline" style="max-width:300px; margin:0 auto 1rem; display:block;">
+            + Adicionar outro remédio
+          </button>
+        </div>
+
+        <a href="{{ url_for('agendamentos') }}" class="btn btn-primary" style="max-width:300px; margin:0 auto; display:block;">
           Ver meu agendamento →
         </a>
       </div>
@@ -144,6 +151,7 @@
   <script>
     // ── Estado ──
     let medId = null, medNome = null, freqHoras = null, inicioDt = null;
+    let remediosCadastrados = 0;
 
     // ── Navegação entre passos ──
     function irPasso(n) {
@@ -222,8 +230,29 @@
       });
 
       const data = await res.json();
-      if (data.sucesso) irPasso(5);
-      else alert('Erro ao salvar. Tente novamente.');
+      if (data.sucesso) {
+        remediosCadastrados++;
+        if (remediosCadastrados >= 2) {
+          document.getElementById('btn-adicionar').style.display = 'none';
+        }
+        irPasso(5);
+      } else {
+        alert('Erro ao salvar. Tente novamente.');
+      }
+    }
+
+    // ── Adicionar outro remédio ──
+    function adicionarOutro() {
+      medId = null; freqHoras = null; inicioDt = null;
+      document.querySelectorAll('.freq-opcao').forEach(e => e.classList.remove('selecionada'));
+      document.getElementById('busca').value = '';
+      document.getElementById('dias').value = '';
+      document.getElementById('med-selecionado').style.display = 'none';
+      document.getElementById('btn-passo1').disabled = true;
+      document.getElementById('btn-passo2').disabled = true;
+      document.getElementById('btn-passo3').disabled = true;
+      document.getElementById('btn-passo4').disabled = true;
+      irPasso(1);
     }
   </script>
 
