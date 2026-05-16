@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+from scheduler import iniciar_scheduler
 import os
 
 load_dotenv()
@@ -20,8 +21,9 @@ supabase: Client = create_client(
 
 @app.route("/")
 def index():
+    if "user_id" in session:
+        return redirect(url_for("agendamentos"))
     return render_template("index.html")
-
 
 @app.route("/cadastro", methods=["GET", "POST"])
 def cadastro():
@@ -102,16 +104,31 @@ def agendamentos():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    schedule = supabase.table("schedules")\
+    todos = supabase.table("schedules")\
         .select("*, meds(name, potency)")\
         .eq("user_id", session["user_id"])\
         .order("created_at", desc=True)\
-        .limit(1)\
         .execute()
 
-    agendamento = schedule.data[0] if schedule.data else None
-    return render_template("agendamentos.html", agendamento=agendamento)
+    ativos = []
+    historico = []
 
+    for s in todos.data:
+        notifs = supabase.table("notifications")\
+            .select("cancelled")\
+            .eq("schedule_id", s["id"])\
+            .eq("sent", False)\
+            .eq("cancelled", False)\
+            .execute()
+
+        if len(notifs.data) > 0:
+            ativos.append(s)
+        else:
+            historico.append(s)
+
+    return render_template("agendamentos.html",
+                           ativos=ativos,
+                           historico=historico)
 
 # ──────────────────────────────────────────────
 # APIs
@@ -166,17 +183,17 @@ def cancelar_rotina():
     data        = request.get_json()
     schedule_id = data.get("schedule_id")
 
-    # Marca notificações futuras como canceladas
-    now = datetime.utcnow().isoformat()
     supabase.table("notifications")\
         .update({"cancelled": True})\
         .eq("schedule_id", schedule_id)\
         .eq("sent", False)\
-        .gte("notification_datetime", now)\
         .execute()
 
     return jsonify({"sucesso": True})
 
 
 if __name__ == "__main__":
+    import os
+    if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+        iniciar_scheduler()
     app.run(debug=True)
