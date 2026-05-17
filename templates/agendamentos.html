@@ -28,8 +28,7 @@
             A cada {{ ag.frequency_hours | int }}h
           </p>
           <p class="detalhe">
-            Começando em
-            {{ ag.start_datetime | replace('T', ' às ') | truncate(19, True, '') }}
+            Começando em {{ ag.start_datetime | horario_br }}
           </p>
           <div style="text-align:right; margin-top:1rem;">
             <button
@@ -65,7 +64,7 @@
           border-radius: var(--radius);
           padding: 1.25rem 1.5rem;
           margin-bottom: 1rem;
-          opacity: 1;
+          opacity: .9;
         ">
           <p style="font-weight:600; margin-bottom:.25rem;">
             {{ item.meds['name'] }} {{ item.meds['potency'] | int }}mg
@@ -75,7 +74,7 @@
             A cada {{ item.frequency_hours | int }}h
           </p>
           <p style="color:var(--texto-suave); font-size:.85rem; margin-top:.25rem;">
-            Início: {{ item.start_datetime | replace('T', ' às ') | truncate(19, True, '') }}
+            Início: {{ item.start_datetime | horario_br }}
           </p>
         </div>
       {% endfor %}
