@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from scheduler import iniciar_scheduler
 import os
 
@@ -14,6 +15,19 @@ supabase: Client = create_client(
     os.getenv("SUPABASE_URL"),
     os.getenv("SUPABASE_KEY")
 )
+
+# ──────────────────────────────────────────────
+# FILTRO DE FUSO HORÁRIO
+# ──────────────────────────────────────────────
+
+@app.template_filter('horario_br')
+def horario_br(dt_str):
+    try:
+        dt = datetime.fromisoformat(dt_str.replace('Z', '+00:00'))
+        br = ZoneInfo('America/Sao_Paulo')
+        return dt.astimezone(br).strftime('%Y-%m-%d às %H:%M')
+    except:
+        return dt_str
 
 # ──────────────────────────────────────────────
 # PÁGINAS
@@ -143,9 +157,8 @@ def salvar_rotina():
     meds_id         = data.get("meds_id")
     days_of_intake  = int(data.get("days_of_intake"))
     frequency_hours = int(data.get("frequency_hours"))
-    start_datetime  = data.get("start_datetime")  # ISO string
+    start_datetime  = data.get("start_datetime")
 
-    # Cria o schedule
     schedule = supabase.table("schedules").insert({
         "user_id":         session["user_id"],
         "meds_id":         meds_id,
@@ -156,7 +169,6 @@ def salvar_rotina():
 
     schedule_id = schedule.data[0]["id"]
 
-    # Gera as linhas de notifications
     start_dt = datetime.fromisoformat(start_datetime)
     total_doses = (days_of_intake * 24) // frequency_hours
     notifications = []
@@ -193,7 +205,6 @@ def cancelar_rotina():
 
 
 if __name__ == "__main__":
-    import os
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         iniciar_scheduler()
     app.run(debug=True)
